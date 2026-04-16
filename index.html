@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subquest | AI Consulting for the Games Industry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── DESIGN TOKENS ─────────────────────────────────── */
+    :root {
+      --color-ink:         #141314;
+      --color-bg:          #F7F3EA;
+      --color-stone:       #B7B1A6;
+      --color-fog:         #E9E3D8;
+      --color-ember:       #D86B52;
+      --color-blue:        #2C466C;
+      --color-teal:        #20B7C6;
+
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-sans:    'Inter', -apple-system, sans-serif;
+    }
+
+    /* ─── RESET ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg);
+      color: var(--color-ink);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    img { display: block; max-width: 100%; }
+    a { text-decoration: none; color: inherit; }
+
+    /* ─── SHARED UTILITIES ───────────────────────────────── */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .overline {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-stone);
+    }
+    .overline::before {
+      content: '';
+      display: block;
+      width: 2px;
+      height: 14px;
+      background: var(--color-ember);
+      flex-shrink: 0;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--color-ember);
+      color: var(--color-bg);
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: background 150ms ease;
+    }
+    .btn-primary:hover { background: #E07A61; }
+    .btn-primary-lg {
+      font-size: 16px;
+      padding: 16px 32px;
+    }
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      font-size: 15px;
+      color: var(--color-blue);
+      cursor: pointer;
+      transition: gap 150ms ease;
+    }
+    .btn-ghost:hover { gap: 10px; }
+    .section-headline {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(32px, 3vw, 44px);
+      line-height: 1.12;
+      letter-spacing: -0.01em;
+      color: var(--color-ink);
+    }
+    .section-headline--light { color: var(--color-bg); }
+
+    /* ─── GRAIN TEXTURE ──────────────────────────────────── */
+    .grain::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       1. GLOBAL NAV
+    ═══════════════════════════════════════════════════════ */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 64px;
+      background: var(--color-ink);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+    }
+    .nav__inner {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav__logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 18px;
+      color: var(--color-bg);
+    }
+    .nav__logo-mark {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+    }
+    /* Waypoint Mark — clipped square motif */
+    .waypoint-mark {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--color-ember);
+      transform: rotate(45deg);
+      position: relative;
+    }
+    .waypoint-mark::after {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      background: var(--color-ember);
+      opacity: 0.25;
+    }
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav__links a {
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+      color: rgba(247, 243, 234, 0.55);
+      transition: color 150ms ease;
+    }
+    .nav__links a:hover { color: var(--color-bg); }
+    .nav__links a.active {
+      color: var(--color-bg);
+      position: relative;
+    }
+    .nav__links a.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--color-ember);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       2. HERO
+    ═══════════════════════════════════════════════════════ */
+    .hero {
+      position: relative;
+      min-height: calc(100vh - 64px);
+      display: flex;
+      align-items: center;
+      background: var(--color-bg);
+      overflow: hidden;
+    }
+    /* Canvas fills the hero background */
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .hero__content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 64px 0;
+    }
+    .hero__overline {
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+    .hero__headline {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(36px, 4.6vw, 64px);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: var(--color-ink);
+      margin-bottom: 24px;
+    }
+    .hero__headline em {
+      font-style: italic;
+      color: var(--color-ember);
+    }
+    .hero__sub {
+      font-size: 17px;
+      line-height: 1.65;
+      color: rgba(20, 19, 20, 0.65);
+      max-width: 560px;
+      margin: 0 auto 32px;
+    }
+    .hero__ctas {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 44px;
+      flex-wrap: wrap;
+    }
+    .hero__proof {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .hero__proof-label {
+      font-size: 12px;
+      color: var(--color-stone);
+    }
+    .hero__proof-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .badge {
+      background: var(--color-fog);
+      color: var(--color-ink);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       3. THE MAP — SERVICES
+    ═══════════════════════════════════════════════════════ */
+    .services {
+      background: var(--color-fog);
+      padding: 96px 0;
+    }
+    .services__header {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+      margin-bottom: 64px;
+    }
+    .services__header-left .section-headline { margin-top: 16px; }
+    .services__header-right {
+      padding-top: 36px;
+      font-size: 16px;
+      line-height: 1.65;
+      color: rgba(20, 19, 20, 0.75);
+    }
+    .services__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      position: relative;
+    }
+    /* Route line connector */
+    .services__grid::after {
+      content: '';
+      position: absolute;
+      bottom: -24px;
+      left: 14px;
+      right: 14px;
+      height: 1px;
+      background-image: repeating-linear-gradient(
+        to right,
+        var(--color-stone) 0px,
+        var(--color-stone) 4px,
+        transparent 4px,
+        transparent 10px
+      );
+    }
+    .service-card {
+      background: var(--color-bg);
+      border: 1px solid var(--color-fog);
+      border-radius: 4px;
+      padding: 28px;
+      position: relative;
+      transition: box-shadow 200ms ease, transform 200ms ease;
+      cursor: default;
+    }
+    .service-card:hover {
+      box-shadow: 0 4px 24px rgba(20, 19, 20, 0.07);
+      transform: translateY(-2px);
+    }
+    .service-card__price {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--color-fog);
+      color: var(--color-stone);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .service-card__icon {
+      width: 32px;
+      height: 32px;
+      color: var(--color-blue);
+      margin-bottom: 16px;
+    }
+    .service-card__icon svg { stroke-width: 1.5; }
+    .service-card__title {
+      font-weight: 600;
+      font-size: 17px;
+      color: var(--color-ink);
+      margin-bottom: 10px;
+    }
+    .service-card__body {
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgba(20, 19, 20, 0.7);
+      margin-bottom: 20px;
+    }
+    .card-link {
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--color-blue);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: gap 150ms ease;
+    }
+    .card-link:hover { gap: 8px; }
+    /* Checkpoint nodes on connector */
+    .checkpoint-node {
+      width: 10px;
+      height: 10px;
+      background: var(--color-ember);
+      transform: rotate(45deg);
+      display: inline-block;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       4. THE QUEST LOG — PROCESS
+    ═══════════════════════════════════════════════════════ */
+    .process {
+      background: var(--color-ink);
+      padding: 96px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .process::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .process__header {
+      text-align: center;
+      margin-bottom: 72px;
+      position: relative;
+      z-index: 1;
+    }
+    .process__header .overline { justify-content: center; }
+    .process__header .overline::before { display: none; }
+    .process__header .overline::after {
+      content: '';
+      display: block;
+      width: 2px;
+      height: 14px;
+      background: var(--color-ember);
+      flex-shrink: 0;
+    }
+    .process__headline {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(32px, 3vw, 44px);
+      color: var(--color-bg);
+      margin-top: 16px;
+      margin-bottom: 12px;
+    }
+    .process__sub {
+      font-size: 16px;
+      color: var(--color-stone);
+      line-height: 1.6;
+    }
+    /* Route line + steps */
+    .process__steps-wrap {
+      position: relative;
+      z-index: 1;
+    }
+    .process__route {
+      position: absolute;
+      top: 24px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--color-ember);
+      display: block;
+    }
+    .process__nodes {
+      position: absolute;
+      top: 19px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 calc(10% - 5px);
+    }
+    .process__node {
+      width: 12px;
+      height: 12px;
+      background: var(--color-ember);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+    .process__steps {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 32px;
+      padding-top: 64px;
+    }
+    .process-step__num {
+      font-weight: 300;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      color: var(--color-stone);
+      margin-bottom: 12px;
+    }
+    .process-step__title {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--color-bg);
+      margin-bottom: 10px;
+    }
+    .process-step__body {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--color-stone);
+    }
+    .process-step__watermark {
+      font-family: var(--font-display);
+      font-size: 72px;
+      font-weight: 700;
+      color: var(--color-stone);
+      opacity: 0.05;
+      line-height: 1;
+      position: absolute;
+      top: -16px;
+      left: -8px;
+      pointer-events: none;
+      user-select: none;
+    }
+    .process-step { position: relative; }
+
+    /* ═══════════════════════════════════════════════════════
+       5. THE PROOF — CASE STUDIES
+    ═══════════════════════════════════════════════════════ */
+    .proof {
+      background: var(--color-bg);
+      padding: 96px 0;
+    }
+    .proof__header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 48px;
+    }
+    .proof__header-left .section-headline { margin-top: 16px; }
+    .proof__see-all {
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--color-blue);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: gap 150ms ease;
+      flex-shrink: 0;
+      align-self: flex-end;
+      padding-bottom: 4px;
+    }
+    .proof__see-all:hover { gap: 8px; }
+    .proof__grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .case-card {
+      background: var(--color-fog);
+      border: 1px solid var(--color-fog);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: box-shadow 200ms ease, transform 200ms ease;
+    }
+    .case-card:hover {
+      box-shadow: 0 8px 32px rgba(20, 19, 20, 0.09);
+      transform: translateY(-3px);
+    }
+    .case-card__image {
+      aspect-ratio: 16/9;
+      background: var(--color-ink);
+      position: relative;
+      overflow: hidden;
+    }
+    .case-card__image-inner {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .case-card__image-bg {
+      position: absolute;
+      inset: 0;
+    }
+    .case-card__image-label {
+      position: absolute;
+      bottom: 16px;
+      left: 20px;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(247, 243, 234, 0.4);
+      font-weight: 500;
+    }
+    .case-card__body {
+      padding: 28px;
+    }
+    .case-card__studio {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-stone);
+      margin-bottom: 10px;
+    }
+    .case-card__outcome {
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--color-ink);
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+    .case-card__desc {
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgba(20, 19, 20, 0.7);
+      margin-bottom: 20px;
+    }
+    .case-card__metric-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 20px;
+      padding: 16px 0;
+      border-top: 1px solid rgba(183, 177, 166, 0.25);
+      border-bottom: 1px solid rgba(183, 177, 166, 0.25);
+      margin-bottom: 20px;
+    }
+    .case-card__metric {
+      flex: 1;
+    }
+    .case-card__metric-num {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--color-ember);
+      line-height: 1;
+    }
+    .case-card__metric-label {
+      font-size: 12px;
+      color: var(--color-stone);
+      margin-top: 4px;
+    }
+    .case-card__footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .tag {
+      background: var(--color-bg);
+      color: var(--color-stone);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(183, 177, 166, 0.3);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       6. THE STACK — CAPABILITIES
+    ═══════════════════════════════════════════════════════ */
+    .stack {
+      background: var(--color-fog);
+      padding: 80px 0;
+    }
+    .stack__header {
+      margin-bottom: 48px;
+    }
+    .stack__header .section-headline { margin-top: 16px; }
+    .stack__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .cluster-card {
+      background: var(--color-bg);
+      border-radius: 4px;
+      padding: 24px;
+      position: relative;
+    }
+    .cluster-card__node {
+      width: 10px;
+      height: 10px;
+      background: var(--color-blue);
+      transform: rotate(45deg);
+      position: absolute;
+      top: -5px;
+      left: 24px;
+    }
+    .cluster-card__title {
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-blue);
+      margin-bottom: 8px;
+      padding-top: 4px;
+    }
+    .cluster-card__desc {
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(20, 19, 20, 0.65);
+      margin-bottom: 16px;
+    }
+    .cluster-card__tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .tool-pill {
+      background: var(--color-fog);
+      color: var(--color-ink);
+      font-size: 12px;
+      font-weight: 400;
+      padding: 3px 10px;
+      border-radius: 3px;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       7. THE CALL — PRIMARY CTA
+    ═══════════════════════════════════════════════════════ */
+    .cta-section {
+      background: var(--color-blue);
+      padding: 120px 0;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+    /* Subtle cartographic bg pattern */
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.07;
+      background-image:
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(216,107,82,0.6) 39px, rgba(216,107,82,0.6) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 79px, rgba(216,107,82,0.6) 79px, rgba(216,107,82,0.6) 80px);
+    }
+    .cta-section__inner {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .cta-section__teal-node {
+      width: 8px;
+      height: 8px;
+      background: var(--color-teal);
+      transform: rotate(45deg);
+      margin: 0 auto 32px;
+    }
+    .cta-section__headline {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(32px, 4vw, 52px);
+      line-height: 1.1;
+      color: var(--color-bg);
+      margin-bottom: 20px;
+    }
+    .cta-section__sub {
+      font-size: 17px;
+      line-height: 1.65;
+      color: var(--color-stone);
+      margin-bottom: 40px;
+    }
+    .cta-section__friction {
+      margin-top: 16px;
+      font-size: 13px;
+      color: rgba(183, 177, 166, 0.7);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       8. FOOTER
+    ═══════════════════════════════════════════════════════ */
+    .footer {
+      background: var(--color-ink);
+      padding: 64px 0 0;
+    }
+    .footer__grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 2fr;
+      gap: 48px;
+      padding-bottom: 48px;
+    }
+    .footer__brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .footer__brand-mark {
+      width: 18px;
+      height: 18px;
+      border: 1.5px solid var(--color-bg);
+      transform: rotate(45deg);
+      position: relative;
+    }
+    .footer__brand-mark::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      background: var(--color-bg);
+      opacity: 0.2;
+    }
+    .footer__brand-name {
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--color-bg);
+    }
+    .footer__tagline {
+      font-size: 13px;
+      color: var(--color-stone);
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+    .footer__socials {
+      display: flex;
+      gap: 16px;
+    }
+    .footer__social {
+      color: var(--color-stone);
+      transition: color 150ms ease;
+    }
+    .footer__social:hover { color: var(--color-bg); }
+    .footer__col-header {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(183, 177, 166, 0.6);
+      margin-bottom: 16px;
+    }
+    .footer__links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .footer__links a {
+      font-size: 14px;
+      color: var(--color-stone);
+      transition: color 150ms ease;
+    }
+    .footer__links a:hover { color: var(--color-bg); }
+    .footer__newsletter-label {
+      font-size: 14px;
+      color: var(--color-bg);
+      margin-bottom: 6px;
+    }
+    .footer__newsletter-sub {
+      font-size: 13px;
+      color: var(--color-stone);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .footer__form {
+      display: flex;
+      gap: 0;
+    }
+    .footer__input {
+      flex: 1;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(183,177,166,0.2);
+      border-right: none;
+      border-radius: 4px 0 0 4px;
+      padding: 0 14px;
+      height: 40px;
+      color: var(--color-bg);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      outline: none;
+    }
+    .footer__input::placeholder { color: rgba(183,177,166,0.5); }
+    .footer__input:focus { border-color: rgba(216,107,82,0.5); }
+    .footer__subscribe {
+      background: var(--color-ember);
+      color: var(--color-bg);
+      border: none;
+      border-radius: 0 4px 4px 0;
+      padding: 0 16px;
+      height: 40px;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 150ms ease;
+    }
+    .footer__subscribe:hover { background: #E07A61; }
+    .footer__bottom {
+      border-top: 1px solid rgba(183, 177, 166, 0.15);
+      padding: 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer__copyright {
+      font-size: 11px;
+      color: rgba(183, 177, 166, 0.4);
+    }
+    .footer__legal-links {
+      display: flex;
+      gap: 20px;
+    }
+    .footer__legal-links a {
+      font-size: 11px;
+      color: rgba(183, 177, 166, 0.4);
+      transition: color 150ms ease;
+    }
+    .footer__legal-links a:hover { color: var(--color-stone); }
+
+    /* ─── BOOKING MODAL ─────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(20, 19, 20, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 200ms ease;
+    }
+    .modal-overlay.is-open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .modal {
+      background: var(--color-bg);
+      border-radius: 8px;
+      width: 100%;
+      max-width: 520px;
+      padding: 40px;
+      position: relative;
+      transform: translateY(16px);
+      transition: transform 200ms ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.is-open .modal {
+      transform: translateY(0);
+    }
+    .modal__close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-stone);
+      padding: 4px;
+      line-height: 1;
+      font-size: 22px;
+      transition: color 150ms ease;
+    }
+    .modal__close:hover { color: var(--color-ink); }
+    .modal__overline {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-ember);
+      margin-bottom: 8px;
+    }
+    .modal__headline {
+      font-family: var(--font-display);
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .modal__sub {
+      font-size: 14px;
+      color: var(--color-stone);
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .form-group.no-margin { margin-bottom: 0; }
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--color-ink);
+    }
+    .form-group label span {
+      font-weight: 400;
+      color: var(--color-stone);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: #fff;
+      border: 1.5px solid var(--color-fog);
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--color-ink);
+      outline: none;
+      transition: border-color 150ms ease;
+      width: 100%;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--color-ember);
+    }
+    .form-group select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23B7B1A6' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+    .form-group textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+    .modal__submit {
+      width: 100%;
+      background: var(--color-ember);
+      color: var(--color-bg);
+      font-family: var(--font-sans);
+      font-weight: 600;
+      font-size: 15px;
+      padding: 14px 24px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: background 150ms ease;
+      margin-top: 8px;
+    }
+    .modal__submit:hover { background: #E07A61; }
+    .modal__submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .modal__footer-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--color-stone);
+      margin-top: 14px;
+    }
+    /* Success state */
+    .modal__success {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+    }
+    .modal__success.is-visible { display: block; }
+    .modal__success-icon {
+      width: 52px;
+      height: 52px;
+      background: #E8F8F5;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .modal__success h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    .modal__success p {
+      font-size: 14px;
+      color: var(--color-stone);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .modal__success .btn-primary {
+      margin: 0 auto;
+    }
+    @media (max-width: 560px) {
+      .modal { padding: 28px 20px; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    /* ─── ANIMATIONS ─────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-glow {
+      0%   { box-shadow: 0 0 0 0 rgba(216,107,82,0.4); }
+      70%  { box-shadow: 0 0 0 12px rgba(216,107,82,0); }
+      100% { box-shadow: 0 0 0 0 rgba(216,107,82,0); }
+    }
+    .hero__overline  { animation: fadeUp 400ms ease-out 200ms both; }
+    .hero__headline  { animation: fadeUp 500ms ease-out 350ms both; }
+    .hero__sub       { animation: fadeUp 400ms ease-out 500ms both; }
+    .hero__ctas      { animation: fadeUp 400ms ease-out 650ms both; }
+    .hero__proof     { animation: fadeUp 300ms ease-out 800ms both; }
+    .cta-section .btn-primary { animation: pulse-glow 3s ease-in-out 2s infinite; }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────── */
+    @media (max-width: 1024px) {
+      .services__grid       { grid-template-columns: repeat(2, 1fr); }
+      .process__steps       { grid-template-columns: repeat(3, 1fr); }
+      .stack__grid          { grid-template-columns: repeat(2, 1fr); }
+      .footer__grid         { grid-template-columns: 1fr 1fr; gap: 32px; }
+    }
+    @media (max-width: 768px) {
+      .nav__links           { display: none; }
+      .hero__content        { padding: 80px 0; }
+      .services__header     { grid-template-columns: 1fr; gap: 16px; }
+      .services__grid       { grid-template-columns: 1fr; }
+      .process__route,
+      .process__nodes       { display: none; }
+      .process__steps       { grid-template-columns: 1fr; padding-top: 0; gap: 40px; }
+      .proof__grid          { grid-template-columns: 1fr; }
+      .proof__header        { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .stack__grid          { grid-template-columns: 1fr; }
+      .footer__grid         { grid-template-columns: 1fr; }
+      .footer__bottom       { flex-direction: column; gap: 12px; text-align: center; }
+    }
+
+    /* ─── MOBILE NAV HINT ────────────────────────────────── */
+    .nav__hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 8px;
+    }
+    .nav__hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--color-bg);
+      border-radius: 1px;
+    }
+    @media (max-width: 768px) {
+      .nav__hamburger { display: flex; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ NAV ═══════════════════════════════════════════════ -->
+  <header class="nav">
+    <div class="container">
+      <div class="nav__inner">
+        <a href="/" class="nav__logo">
+          <div class="nav__logo-mark"><div class="waypoint-mark"></div></div>
+          Subquest
+        </a>
+        <nav>
+          <ul class="nav__links">
+            <li><a href="/work" class="active">Work</a></li>
+            <li><a href="/services">Services</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/field-notes">Field Notes</a></li>
+          </ul>
+        </nav>
+        <button onclick="openBookingModal()" class="btn-primary">Book a Call</button>
+        <div class="nav__hamburger" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ HERO ══════════════════════════════════════════════ -->
+  <section class="hero">
+    <canvas id="hero-canvas" aria-hidden="true"></canvas>
+    <div class="container">
+      <div class="hero__content">
+        <p class="overline hero__overline">AI Consulting for the Games Industry</p>
+        <h1 class="hero__headline">
+          The AI operations layer your <em>games business</em> has been waiting for.
+        </h1>
+        <p class="hero__sub">
+          Whether you are a solo developer, independent studio, publisher, or agency, Subquest builds AI systems that fit how your business actually works. From quick workflows to custom multi-agent pipelines, we meet you where you are.
+        </p>
+        <div class="hero__ctas">
+          <button onclick="openBookingModal()" class="btn-primary btn-primary-lg">Book a Discovery Call</button>
+          <a href="/work" class="btn-ghost">See Our Work <span>→</span></a>
+        </div>
+        <div class="hero__proof">
+          <span class="hero__proof-label">Trusted by companies shipping on</span>
+          <div class="hero__proof-badges">
+            <span class="badge">Steam</span>
+            <span class="badge">PlayStation</span>
+            <span class="badge">Nintendo</span>
+            <span class="badge">Xbox</span>
+            <span class="badge">Epic Games Store</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  (function() {
+    const canvas = document.getElementById('hero-canvas');
+    const ctx = canvas.getContext('2d');
+
+    const C_STONE = 'rgba(183,177,166,';
+    const C_EMBER = 'rgba(216,107,82,';
+    const C_BLUE  = 'rgba(44,70,108,';
+
+    let W, H, nodes, edges, tick = 0;
+
+    function makeNode(w, h) {
+      return {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        size: 7 + Math.random() * 5,
+        type: Math.random() < 0.15 ? 'ember' : (Math.random() < 0.4 ? 'blue' : 'stone'),
+        birth: tick,
+        life: 280 + Math.random() * 400,
+        phase: Math.random() * Math.PI * 2,
+      };
+    }
+
+    function buildEdges() {
+      edges = [];
+      const maxDist = Math.min(W, H) * 0.22;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x;
+          const dy = nodes[i].y - nodes[j].y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d < maxDist) {
+            edges.push({ a: i, b: j, dashed: Math.random() < 0.55, dashOffset: Math.random() * 20 });
+          }
+        }
+      }
+    }
+
+    function resize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      W = canvas.width  = rect.width;
+      H = canvas.height = rect.height;
+    }
+
+    function init() {
+      resize();
+      const count = Math.max(Math.floor((W * H) / 120000), 5);
+      nodes = Array.from({ length: count }, () => {
+        const n = makeNode(W, H);
+        n.birth = tick - Math.random() * n.life;
+        return n;
+      });
+      buildEdges();
+    }
+
+    function nodeAlpha(n) {
+      const age = tick - n.birth;
+      const fade = 60;
+      if (age < fade) return age / fade;
+      if (age > n.life - fade) return Math.max(0, (n.life - age) / fade);
+      return 1;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      edges.forEach(e => {
+        const na = nodes[e.a], nb = nodes[e.b];
+        const alpha = Math.min(nodeAlpha(na), nodeAlpha(nb)) * 0.13;
+        if (alpha < 0.01) return;
+        ctx.beginPath();
+        ctx.strokeStyle = C_STONE + alpha + ')';
+        ctx.lineWidth = 0.75;
+        if (e.dashed) {
+          ctx.setLineDash([3, 7]);
+          ctx.lineDashOffset = -tick * 0.18 + e.dashOffset;
+        } else {
+          ctx.setLineDash([]);
+        }
+        ctx.moveTo(na.x, na.y);
+        ctx.lineTo(nb.x, nb.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      });
+
+      nodes.forEach(n => {
+        const alpha = nodeAlpha(n);
+        if (alpha < 0.01) return;
+        const pulse = n.type === 'ember' ? 1 + 0.18 * Math.sin(tick * 0.025 + n.phase) : 1;
+        const s = n.size * pulse;
+        let color;
+        if (n.type === 'ember')     color = C_EMBER + (alpha * 0.75) + ')';
+        else if (n.type === 'blue') color = C_BLUE  + (alpha * 0.35) + ')';
+        else                         color = C_STONE + (alpha * 0.45) + ')';
+        ctx.save();
+        ctx.translate(n.x, n.y);
+        ctx.rotate(Math.PI / 4);
+        ctx.fillStyle = color;
+        ctx.fillRect(-s/2, -s/2, s, s);
+        if (n.type === 'ember') {
+          ctx.fillStyle = C_EMBER + (alpha * 0.12) + ')';
+          ctx.fillRect(-s, -s, s*2, s*2);
+        }
+        ctx.restore();
+      });
+    }
+
+    function update() {
+      tick++;
+      nodes.forEach((n, i) => {
+        if (tick - n.birth >= n.life) {
+          nodes[i] = makeNode(W, H);
+          buildEdges();
+        }
+        n.x += Math.sin(tick * 0.0008 + n.phase) * 0.12;
+        n.y += Math.cos(tick * 0.0006 + n.phase) * 0.09;
+      });
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    init();
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) { draw(); } else { loop(); }
+
+    window.addEventListener('resize', () => { resize(); buildEdges(); });
+  })();
+  </script>
+
+  <!-- ═══ THE MAP — SERVICES ════════════════════════════════ -->
+  <section class="services">
+    <div class="container">
+      <div class="services__header">
+        <div class="services__header-left">
+          <p class="overline">The Map</p>
+          <h2 class="section-headline">AI Systems Tailored To Your Needs.</h2>
+        </div>
+        <div class="services__header-right">
+          Subquest builds the workflows, systems, and operational infrastructure that let your team move at AI speed without losing what makes your work yours. Four tiers of engagement: from a one-week setup to a long-term embedded partnership.
+        </div>
+      </div>
+
+      <div class="services__grid">
+
+        <div class="service-card">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3 class="service-card__title">AI Workflow Setup</h3>
+          <p class="service-card__body">One-week implementation using your existing tools. Immediate, tangible leverage without rebuilding your entire production process.</p>
+          <a href="/services/workflow-setup" class="card-link">Learn more <span>→</span></a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/>
+            </svg>
+          </div>
+          <h3 class="service-card__title">AI Ops Sprint</h3>
+          <p class="service-card__body">2–4 week engagement: end-to-end workflow mapping, system design, and deployment. You see the full plan before we build anything.</p>
+          <a href="/services/ops-sprint" class="card-link">Learn more <span>→</span></a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+            </svg>
+          </div>
+          <h3 class="service-card__title">Custom AI Systems</h3>
+          <p class="service-card__body">Bespoke pipelines built for your specific needs: from playtest synthesis to automation. Everything you need to run independently.</p>
+          <a href="/services/custom-systems" class="card-link">Learn more <span>→</span></a>
+        </div>
+
+        <div class="service-card">
+          <div class="service-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <h3 class="service-card__title">Ongoing Retainer</h3>
+          <p class="service-card__body">Embedded AI ops partner on a monthly cadence. Continuous improvement as your tools, team, and production needs evolve.</p>
+          <a href="/services/retainer" class="card-link">Learn more <span>→</span></a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ THE QUEST LOG — PROCESS ═══════════════════════════ -->
+  <section class="process">
+    <div class="container">
+      <div class="process__header">
+        <p class="overline">The Quest Log</p>
+        <h2 class="process__headline">How a Subquest Engagement Works</h2>
+        <p class="process__sub">From first call to deployed system. This is how we move.</p>
+      </div>
+      <div class="process__steps-wrap">
+        <div class="process__route"></div>
+        <div class="process__nodes">
+          <div class="process__node"></div>
+          <div class="process__node"></div>
+          <div class="process__node"></div>
+          <div class="process__node"></div>
+          <div class="process__node"></div>
+        </div>
+        <div class="process__steps">
+
+          <div class="process-step">
+            <div class="process-step__watermark">01</div>
+            <p class="process-step__num">01</p>
+            <h3 class="process-step__title">Recon</h3>
+            <p class="process-step__body">Discovery call. We map your current workflows, tools, team structure, and production cycle, identifying where AI creates the most leverage with the least disruption.</p>
+          </div>
+
+          <div class="process-step">
+            <div class="process-step__watermark">02</div>
+            <p class="process-step__num">02</p>
+            <h3 class="process-step__title">Chart</h3>
+            <p class="process-step__body">We design the systems architecture: which AI tools, which workflows, what gets automated, what stays human. You see the full map before we build anything.</p>
+          </div>
+
+          <div class="process-step">
+            <div class="process-step__watermark">03</div>
+            <p class="process-step__num">03</p>
+            <h3 class="process-step__title">Build</h3>
+            <p class="process-step__body">Implementation sprint. We set up, connect, and configure. We train your team on the systems in context, not in a generic tutorial built for someone else's operation.</p>
+          </div>
+
+          <div class="process-step">
+            <div class="process-step__watermark">04</div>
+            <p class="process-step__num">04</p>
+            <h3 class="process-step__title">Test</h3>
+            <p class="process-step__body">Live with your team for a defined period. We run alongside you, catch edge cases, tune outputs, and document the system while it's in active use.</p>
+          </div>
+
+          <div class="process-step">
+            <div class="process-step__watermark">05</div>
+            <p class="process-step__num">05</p>
+            <h3 class="process-step__title">Deploy</h3>
+            <p class="process-step__body">Everything you need to run independently. Full documentation, team training, and an optional retainer for ongoing improvement. The system runs on your stack, your accounts, your terms. No lock-in.</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ THE PROOF — CASE STUDIES ══════════════════════════ -->
+  <section class="proof">
+    <div class="container">
+      <div class="proof__header">
+        <div class="proof__header-left">
+          <p class="overline">The Proof</p>
+          <h2 class="section-headline">Real Teams.<br>Real Results.</h2>
+        </div>
+        <a href="/work" class="proof__see-all">See all work <span>→</span></a>
+      </div>
+
+      <div class="proof__grid">
+
+        <!-- Case Study 1 -->
+        <div class="case-card">
+          <div class="case-card__image">
+            <div class="case-card__image-inner">
+              <div class="case-card__image-bg" style="background: linear-gradient(135deg, #1C2B3A 0%, #0f1a26 60%, #2C3A2A 100%);"></div>
+              <!-- Abstract route-line composition -->
+              <svg width="300" height="170" viewBox="0 0 300 170" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:1;opacity:0.2;">
+                <path d="M20 140 L80 90 L140 110 L200 60 L260 80" stroke="#D86B52" stroke-width="1.5" stroke-dasharray="4 6"/>
+                <rect x="195" y="55" width="10" height="10" transform="rotate(45 200 60)" fill="#D86B52"/>
+                <circle cx="80" cy="90" r="4" fill="#B7B1A6"/>
+                <circle cx="140" cy="110" r="4" fill="#B7B1A6"/>
+                <line x1="0" y1="30" x2="300" y2="30" stroke="#B7B1A6" stroke-width="0.5" stroke-dasharray="2 8" opacity="0.4"/>
+                <line x1="0" y1="80" x2="300" y2="80" stroke="#B7B1A6" stroke-width="0.5" stroke-dasharray="2 8" opacity="0.4"/>
+                <line x1="0" y1="130" x2="300" y2="130" stroke="#B7B1A6" stroke-width="0.5" stroke-dasharray="2 8" opacity="0.4"/>
+              </svg>
+            </div>
+            <span class="case-card__image-label">Beacon Games · Indie Developer · Steam</span>
+          </div>
+          <div class="case-card__body">
+            <p class="case-card__studio">Beacon Games</p>
+            <h3 class="case-card__outcome">From shipping every six months to shipping every six weeks.</h3>
+            <p class="case-card__desc">Beacon was manually writing every localization string, every patch note, every community update. We built a content operations system that cut their content overhead by 70% without losing their voice.</p>
+            <div class="case-card__metric-row">
+              <div class="case-card__metric">
+                <div class="case-card__metric-num">70%</div>
+                <div class="case-card__metric-label">Reduction in content overhead</div>
+              </div>
+              <div class="case-card__metric">
+                <div class="case-card__metric-num">4×</div>
+                <div class="case-card__metric-label">Faster release cadence</div>
+              </div>
+            </div>
+            <div class="case-card__footer">
+              <span class="tag">AI Ops Sprint</span>
+              <a href="/work/beacon-games-ship-faster" class="card-link">Read the case study <span>→</span></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Case Study 2 -->
+        <div class="case-card">
+          <div class="case-card__image">
+            <div class="case-card__image-inner">
+              <div class="case-card__image-bg" style="background: linear-gradient(135deg, #2B1A12 0%, #1a1010 60%, #1C2B3A 100%);"></div>
+              <svg width="300" height="170" viewBox="0 0 300 170" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:1;opacity:0.2;">
+                <rect x="30" y="40" width="80" height="50" rx="2" stroke="#B7B1A6" stroke-width="1"/>
+                <rect x="130" y="55" width="80" height="50" rx="2" stroke="#B7B1A6" stroke-width="1"/>
+                <rect x="230" y="40" width="50" height="50" rx="2" stroke="#D86B52" stroke-width="1.5"/>
+                <line x1="110" y1="65" x2="130" y2="80" stroke="#D86B52" stroke-width="1" stroke-dasharray="3 4"/>
+                <line x1="210" y1="80" x2="230" y2="65" stroke="#D86B52" stroke-width="1" stroke-dasharray="3 4"/>
+                <rect x="243" y="53" width="24" height="24" transform="rotate(45 255 65)" fill="#D86B52" opacity="0.15"/>
+              </svg>
+            </div>
+            <span class="case-card__image-label">Duskfall Interactive · Mid-Sized Publisher</span>
+          </div>
+          <div class="case-card__body">
+            <p class="case-card__studio">Duskfall Interactive</p>
+            <h3 class="case-card__outcome">QA bottleneck eliminated. Playtest reports in hours, not days.</h3>
+            <p class="case-card__desc">A 12-person publisher running QA manually across three simultaneous titles. We built a playtest synthesis pipeline that turned raw session data into structured, actionable reports. Automatically.</p>
+            <div class="case-card__metric-row">
+              <div class="case-card__metric">
+                <div class="case-card__metric-num">$28K</div>
+                <div class="case-card__metric-label">Annual QA cost savings</div>
+              </div>
+              <div class="case-card__metric">
+                <div class="case-card__metric-num">3 days</div>
+                <div class="case-card__metric-label">Saved per playtest cycle</div>
+              </div>
+            </div>
+            <div class="case-card__footer">
+              <span class="tag">Custom AI Systems</span>
+              <a href="/work/duskfall-qa-pipeline" class="card-link">Read the case study <span>→</span></a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ THE STACK — CAPABILITIES ══════════════════════════ -->
+  <section class="stack">
+    <div class="container">
+      <div class="stack__header">
+        <p class="overline">The Stack</p>
+        <h2 class="section-headline">Built on What Works</h2>
+      </div>
+
+      <div class="stack__grid">
+
+        <div class="cluster-card">
+          <div class="cluster-card__node"></div>
+          <h4 class="cluster-card__title">Content &amp; Creative AI</h4>
+          <p class="cluster-card__desc">LLM workflows, image generation pipelines, prompt libraries, and voice synthesis for teams that create constantly.</p>
+          <div class="cluster-card__tools">
+            <span class="tool-pill">GPT-4o</span>
+            <span class="tool-pill">Claude</span>
+            <span class="tool-pill">Midjourney</span>
+            <span class="tool-pill">ElevenLabs</span>
+            <span class="tool-pill">Runway</span>
+          </div>
+        </div>
+
+        <div class="cluster-card">
+          <div class="cluster-card__node"></div>
+          <h4 class="cluster-card__title">Analytics &amp; Playtest</h4>
+          <p class="cluster-card__desc">Data pipeline setup, playtest synthesis tools, heatmap integration, and session analysis that surfaces signal from noise.</p>
+          <div class="cluster-card__tools">
+            <span class="tool-pill">GameAnalytics</span>
+            <span class="tool-pill">Metabase</span>
+            <span class="tool-pill">Mixpanel</span>
+            <span class="tool-pill">dbt</span>
+          </div>
+        </div>
+
+        <div class="cluster-card">
+          <div class="cluster-card__node"></div>
+          <h4 class="cluster-card__title">Publishing &amp; Community</h4>
+          <p class="cluster-card__desc">Creator outreach automation, social scheduling AI, and community monitoring built around game release cycles.</p>
+          <div class="cluster-card__tools">
+            <span class="tool-pill">Hootsuite</span>
+            <span class="tool-pill">Buffer</span>
+            <span class="tool-pill">Moderation API</span>
+            <span class="tool-pill">Discord bots</span>
+          </div>
+        </div>
+
+        <div class="cluster-card">
+          <div class="cluster-card__node"></div>
+          <h4 class="cluster-card__title">Operations &amp; Internal</h4>
+          <p class="cluster-card__desc">Meeting summarization, documentation AI, sprint automation, and internal knowledge bases that don't go stale.</p>
+          <div class="cluster-card__tools">
+            <span class="tool-pill">Notion AI</span>
+            <span class="tool-pill">Linear</span>
+            <span class="tool-pill">Slack AI</span>
+            <span class="tool-pill">Granola</span>
+          </div>
+        </div>
+
+        <div class="cluster-card">
+          <div class="cluster-card__node"></div>
+          <h4 class="cluster-card__title">Infrastructure</h4>
+          <p class="cluster-card__desc">API integration, workflow builders, vector databases, and cost monitoring so your AI stack doesn't become a liability.</p>
+          <div class="cluster-card__tools">
+            <span class="tool-pill">n8n</span>
+            <span class="tool-pill">Zapier</span>
+            <span class="tool-pill">Make</span>
+            <span class="tool-pill">Pinecone</span>
+            <span class="tool-pill">Supabase</span>
+          </div>
+        </div>
+
+        <div class="cluster-card">
+          <div class="cluster-card__node"></div>
+          <h4 class="cluster-card__title">Platform Expertise</h4>
+          <p class="cluster-card__desc">We know the publishing ecosystems your games live in, because we have operated in them.</p>
+          <div class="cluster-card__tools">
+            <span class="tool-pill">Steam</span>
+            <span class="tool-pill">Epic Games Store</span>
+            <span class="tool-pill">PlayStation</span>
+            <span class="tool-pill">Discord</span>
+            <span class="tool-pill">Twitch</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ THE CALL — PRIMARY CTA ════════════════════════════ -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-section__inner">
+        <div class="cta-section__teal-node"></div>
+        <h2 class="cta-section__headline">Ready to Map Your AI?</h2>
+        <p class="cta-section__sub">In a free 30-minute call, we will identify where AI creates the most leverage in your workflow and whether a Subquest engagement is the right fit.</p>
+        <button onclick="openBookingModal()" class="btn-primary btn-primary-lg">Book a Free Discovery Call</button>
+        <p class="cta-section__friction">30 minutes. No commitment. Just a map.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+
+        <div>
+          <div class="footer__brand-logo">
+            <div class="footer__brand-mark"></div>
+            <span class="footer__brand-name">Subquest</span>
+          </div>
+          <p class="footer__tagline">AI Consulting for the Games Industry.</p>
+          <div class="footer__socials">
+            <a href="#" class="footer__social" aria-label="Twitter/X">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l16 16M4 20L20 4"/></svg>
+            </a>
+            <a href="#" class="footer__social" aria-label="LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M8 11v5M8 8v.01M12 16v-5M12 11a3 3 0 0 1 6 0v5"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <div>
+          <p class="footer__col-header">Navigate</p>
+          <ul class="footer__links">
+            <li><a href="/work">Work</a></li>
+            <li><a href="/services">Services</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/field-notes">Field Notes</a></li>
+            <li><a href="#" onclick="openBookingModal(); return false;">Contact</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="footer__col-header">Engage</p>
+          <ul class="footer__links">
+            <li><a href="#" onclick="openBookingModal(); return false;">Book a Discovery Call</a></li>
+            <li><a href="/services/workflow-setup">Start with Workflow Setup</a></li>
+            <li><a href="mailto:hello@subquest.co">hello@subquest.co</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <p class="footer__newsletter-label">Field Dispatches</p>
+          <p class="footer__newsletter-sub">Occasional notes on AI operations across the games industry. No fluff.</p>
+          <div class="footer__form">
+            <input class="footer__input" type="email" placeholder="your@company.com" />
+            <button class="footer__subscribe">Subscribe</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p class="footer__copyright">© 2026 Subquest. All rights reserved.</p>
+        <div class="footer__legal-links">
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- ═══ BOOKING MODAL ══════════════════════════════════════ -->
+  <div class="modal-overlay" id="bookingModal" role="dialog" aria-modal="true" aria-labelledby="modalHeadline">
+    <div class="modal">
+      <button class="modal__close" onclick="closeBookingModal()" aria-label="Close">&times;</button>
+
+      <!-- Form view -->
+      <div id="modalForm">
+        <p class="modal__overline">Free Discovery Call</p>
+        <h2 class="modal__headline" id="modalHeadline">Let's map your AI opportunity.</h2>
+        <p class="modal__sub">30 minutes. No commitment. Tell us a bit about yourself and we'll send you a link to pick a time.</p>
+
+        <form id="bookingForm"
+              action="https://formspree.io/f/mwvavagr"
+              method="POST">
+
+          <!-- Hidden fields for Formspree -->
+          <input type="hidden" name="_subject" value="New Discovery Call Request — Subquest" />
+          <input type="hidden" name="_replyto" id="replyToField" value="" />
+          <input type="text" name="_gotcha" style="display:none" />
+
+          <div class="form-row">
+            <div class="form-group no-margin">
+              <label for="fullName">Full Name</label>
+              <input type="text" id="fullName" name="full_name" placeholder="Jane Smith" required />
+            </div>
+            <div class="form-group no-margin">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" placeholder="jane@studio.com" required
+                     oninput="document.getElementById('replyToField').value = this.value" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group no-margin">
+              <label for="company">Company</label>
+              <input type="text" id="company" name="company" placeholder="Pixel Forge Studios" required />
+            </div>
+            <div class="form-group no-margin">
+              <label for="companySize">Company Size</label>
+              <select id="companySize" name="company_size" required>
+                <option value="" disabled selected>Select…</option>
+                <option value="1–10">1–10</option>
+                <option value="11–50">11–50</option>
+                <option value="51–250">51–250</option>
+                <option value="250+">250+</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="aiGoals">What are you looking to accomplish with AI? <span>(optional)</span></label>
+            <textarea id="aiGoals" name="ai_goals" placeholder="e.g. Automate QA, speed up content pipelines, reduce operational overhead…"></textarea>
+          </div>
+
+          <button type="submit" class="modal__submit" id="submitBtn">Request a Discovery Call →</button>
+          <p class="modal__footer-note">🔒 We'll never share your details. You'll receive a calendar link to pick your time.</p>
+        </form>
+      </div>
+
+      <!-- Success view -->
+      <div class="modal__success" id="modalSuccess">
+        <div class="modal__success-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#20B7C6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3>You're on the list.</h3>
+        <p>Now pick a time that works for you. The call is 30 minutes and there's zero commitment.</p>
+        <a href="https://calendar.app.google/W9zjkEGoDWjSPsjX9"
+           target="_blank" rel="noopener" class="btn-primary btn-primary-lg" id="calendarLink">
+          Pick Your Time Slot →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ── Booking modal ── */
+    function openBookingModal() {
+      document.getElementById('bookingModal').classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeBookingModal() {
+      document.getElementById('bookingModal').classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+    // Close on overlay click
+    document.getElementById('bookingModal').addEventListener('click', function(e) {
+      if (e.target === this) closeBookingModal();
+    });
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeBookingModal();
+    });
+
+    /* ── Form submission ── */
+    document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      const formData = new FormData(this);
+
+      try {
+        const res = await fetch(this.action, {
+          method: 'POST',
+          body: formData,
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (res.ok) {
+          document.getElementById('modalForm').style.display = 'none';
+          document.getElementById('modalSuccess').classList.add('is-visible');
+        } else {
+          btn.disabled = false;
+          btn.textContent = 'Request a Discovery Call →';
+          alert('Something went wrong. Please email us directly at leads@subquest.ai');
+        }
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Request a Discovery Call →';
+        alert('Something went wrong. Please email us directly at leads@subquest.ai');
+      }
+    });
+  </script>
+
+</body>
+</html>
